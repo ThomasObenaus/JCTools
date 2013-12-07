@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+
+<project name="tools" basedir="." default="jar">
+
+	<target name="init">
+	    <!-- Setzen von Eigenschaften -->
+	    
+	    <!-- Bitte an das jeweilige Eclipse-Projekt anpassen -->
+	    <property name="ToolL.eclipse.build.dir"	value="bin"/>
+		<property name="ToolL.eclipse.src.dir"		value="src"/>
+			
+		<!-- Bitte Versionsnummer des anpassen -->
+		<property name="ToolL.Program-Version"  value="1.0.1.4"/>
+	    
+	    <!-- Diese Eigenschaften sollten unverändert bleiben -->
+	    <property name="ToolL.jar.dir"			value="jar"/>
+		<property name="ToolL.apiDocZip" value="${ant.project.name}_doc.zip"/>
+		<property name="ToolL.sourceZip" value="${ant.project.name}_src.zip"/>
+		<property name="ToolL.sourceTemp" value="_src_tmp"/>
+		<property name="ToolL.jarName" value="${ant.project.name}.jar"/>
+	</target>
+	
+	<!-- API-Doc generieren und in tools_doc.zip packen -->
+	<target name="createDoc" depends="init">
+  		<echo message="Create and zip API-Doc"/>
+  		<ant antfile="javadoc.xml" dir=""/>
+  		<zip destfile="${ToolL.apiDocZip}" basedir="api" />
+  	</target>
+	
+	<!-- Quellcode in tools_src.zip packen -->
+	<target name="createSrc" depends="createDoc">
+  		<echo message="Copy source-files and zip them"/>
+		<mkdir dir="${ToolL.sourceTemp}"/>
+		<!-- Dateien aus Eclipse src Verzeichnis kopieren -->
+        <copy toDir="${ToolL.sourceTemp}/">
+    		<fileset dir="${ToolL.eclipse.src.dir}">
+    			<include name="**/*.java"/>
+        		<include name="**/*.properties"/>
+    		</fileset>
+    	</copy>
+  		<zip destfile="${ToolL.sourceZip}" basedir="${ToolL.sourceTemp}" />
+		<delete dir="${ToolL.sourceTemp}"/>
+  	</target>
+	
+	<!-- 1. Schritt, Ordner "jar" löschen --> 
+    <target name="clean" depends="init">
+    	<echo message="Deleting folder /${ToolL.jar.dir}."/>
+        <delete dir="${ToolL.jar.dir}"/>
+    </target>
+	
+	<!-- 3. Schritt jar erzeugen und Ordner jar löschen --> 
+    <target name="jar" depends="clean,createSrc">
+   		<echo message="Copy files from build-directory /${ToolL.eclipse.build.dir} to /${ToolL.jar.dir}."/>     
+        <!-- Dateien aus Eclipse build Verzeichnis kopieren -->
+        <copy toDir="${ToolL.jar.dir}/">
+    		<fileset dir="${ToolL.eclipse.build.dir}">
+    			<include name="**/*.class"/>
+        		<include name="**/*.properties"/>
+    			<include name="**/*.gif"/>
+    			<include name="**/*.png"/>        		
+        		<exclude name="**/*.jar"/>    			
+    		</fileset>
+    	</copy>
+    	
+        <!-- JAR-Datei erzeugen -->
+    	<echo message="Create jar-file /${ToolL.jar.dir}/${ToolL.jarName}."/>
+    	<echo message="Program-Version: ${ToolL.Program-Version}"/>
+        <jar destfile="${ToolL.jar.dir}/${ToolL.jarName}" basedir="${ToolL.jar.dir}">        
+        	<!-- Einstiegspunkt in MANIFEST der JAR-Datei schreiben -->
+            <manifest>
+            	<attribute name="Program-Version" value="${ToolL.Program-Version}"/>
+            </manifest>
+        </jar>
+        
+        <!-- JAR-Datei ins Projektverzeichnis kopieren -->
+    	<echo message="copy ${ToolL.jar.dir}/${ToolL.jarName} into project-directory"/>
+    	<copy file="${ToolL.jar.dir}/${ToolL.jarName}" todir="."/>
+
+        <!-- Temporäres JAR-Verzeichnis löschen -->
+    	<antcall target="clean"></antcall>    	
+    </target>
+</project>

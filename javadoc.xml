@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" classpath="/usr/local/eclipse_keppler/plugins/org.hamcrest.core_1.3.0.v201303031735.jar:/usr/local/eclipse_keppler/plugins/org.junit_4.11.0.v201303080030/junit.jar" destdir="api" doctitle="ToolsLibrary - API" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="thobe.tools.generics,thobe.tools.tests.log,thobe.tools.tests,thobe.tools.log,thobe.tools.utils,thobe.tools.tests.preferences,thobe.tools.math,thobe.tools.xml,thobe.tools,thobe.tools.preferences" source="1.7" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
