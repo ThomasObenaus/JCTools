@@ -24,7 +24,7 @@ import thobe.tools.utils.CopyFileException;
 
 /**
  * @author Thomas Obenaus
- * @source FileTools.java
+ * @source FileTools.java 
  * @date 26.06.2009
  */
 public class FileTools
