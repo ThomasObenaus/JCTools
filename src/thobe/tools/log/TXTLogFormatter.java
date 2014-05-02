@@ -46,7 +46,7 @@ public class TXTLogFormatter extends SimpleFormatter
 
 		message = String.format( message, record.getParameters( ) );
 		Date date = new Date( record.getMillis( ) );
-		return formatter.format( date ).toString( ) + " [" + record.getLevel( ) + "] " + message + "\n";
+		return formatter.format( date ).toString( ) + " " + record.getLoggerName( ) + " [" + record.getLevel( ) + "] " + message + "\n";
 	}
 
 }
