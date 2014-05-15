@@ -146,7 +146,7 @@ public class FileTools
 			if ( !target_dir.mkdir( ) )
 				throw new CopyFileException( "Error creating target-directory [" + target_dir.getAbsolutePath( ) + "], access denied" ); //$NON-NLS-1$ //$NON-NLS-2$
 		}
-
+		
 		/* source is no directory */
 		if ( !source_dir.isDirectory( ) )
 			throw new CopyFileException( "The given source [" + source_dir.getAbsolutePath( ) + "] is no directory" ); //$NON-NLS-1$ //$NON-NLS-2$
