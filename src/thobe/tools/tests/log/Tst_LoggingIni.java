@@ -39,6 +39,9 @@ public class Tst_LoggingIni
 			log.severe( "That should be visible on stdout and in file test2.log" );
 			log.info( "That should be visible on stdout and in file test2.log" );
 
+			for ( Logger l : Logging.getRegisteredLoggers( ) )
+				Logging.printLogger( l );
+
 		}
 		catch ( LoggingException e )
 		{

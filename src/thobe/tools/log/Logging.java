@@ -12,10 +12,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +31,11 @@ public class Logging
 {
 	public static final String	GROUP_SEPARATOR		= ";";
 	public static final String	ELEMENT_SEPARATOR	= ",";
+
+	/**
+	 * List of loggers that where registered via ini-file resulting in calling {@link Logging#init(String)}
+	 */
+	private static Set<Logger>	registeredLoggers	= new HashSet<>( );
 
 	/**
 	 * Use this method to initialize logging per ini-file. Within the given ini-file you can specify log-target (a file or stdout) for each
@@ -102,7 +110,18 @@ public class Logging
 
 						// 3. configure the log-channel
 						Logger log = Logger.getLogger( logChannel );
-						log.setLevel( level );
+
+						// don't overwrite log-level that is higher (less verbose) than a previously set log-level
+						if ( registeredLoggers.contains( log ) )
+						{
+							if ( log.getLevel( ).intValue( ) > level.intValue( ) )
+								log.setLevel( level );
+						}// if ( registeredLoggers.contains( log ) )
+						else
+						{
+							log.setLevel( level );
+						}
+
 						log.setUseParentHandlers( false );
 
 						if ( type == LogTargetType.STDOUT )
@@ -146,6 +165,8 @@ public class Logging
 								fHandler.setLevel( level );
 							log.addHandler( fHandler );
 						}// if ( type == LogTargetType.FILE ).
+
+						registeredLoggers.add( log );
 					}
 					catch ( IllegalArgumentException e )
 					{
@@ -180,6 +201,24 @@ public class Logging
 			if ( logTargetTypeStr.toUpperCase( ).equals( STDOUT.toString( ) ) )
 				return STDOUT;
 			return FILE;
+		}
+	}
+
+	/**
+	 * Returns the list of registered {@link Logger}'s.
+	 * @return
+	 */
+	public static Set<Logger> getRegisteredLoggers( )
+	{
+		return registeredLoggers;
+	}
+
+	public static void printLogger( Logger logger )
+	{
+		System.out.println( logger.getName( ) + " {lvl=" + logger.getLevel( ) + "}" );
+		for ( Handler handler : logger.getHandlers( ) )
+		{
+			System.out.println( "\t" + handler.toString( ) + " {lvl=" + handler.getLevel( ) + ", formatter=" + handler.getFormatter( ) + "}" );
 		}
 	}
 }
