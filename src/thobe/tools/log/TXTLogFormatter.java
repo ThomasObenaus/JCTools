@@ -9,44 +9,51 @@
  */
 package thobe.tools.log;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Thomas Obenaus
  * @source TXTLogFormatter.java
  * @date 26.03.2012
  */
-public class TXTLogFormatter extends SimpleFormatter
-{
-	private static Pattern		pattern		= Pattern.compile( "\\{[0-9]+\\}" );
-	private static DateFormat	formatter	= new SimpleDateFormat( "HH:mm:ss:SSS" );
+public class TXTLogFormatter extends SimpleFormatter {
+	private static DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
 
-	public TXTLogFormatter( )
-	{}
+	private static final String LINE_SEPARATOR = System
+			.getProperty("line.separator");
+
+	public TXTLogFormatter() {
+	}
 
 	@Override
-	public String format( LogRecord record )
-	{
-		String message = record.getMessage( );
+	public String format(LogRecord record) {
 
-		Matcher matcher = pattern.matcher( message );
-		while ( matcher.find( ) )
-		{
-			String gid = matcher.group( 0 ).replace( "{", "" );
-			gid = gid.replace( "}", "" );
-			int d = Integer.parseInt( gid ) + 1;
-			message = message.replaceFirst( pattern.pattern( ), "%" + d + "\\$s" );
+		StringBuilder sb = new StringBuilder();
+
+		String dateStr = formatter.format(new Date(record.getMillis()));
+		sb.append(dateStr + " ");
+		sb.append("[" + record.getLevel().getLocalizedName() + "] ");
+		sb.append(formatMessage(record)).append(LINE_SEPARATOR);
+
+		if (record.getThrown() != null) {
+			try {
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				record.getThrown().printStackTrace(pw);
+				pw.close();
+				sb.append(sw.toString());
+			} catch (Exception ex) {
+				// ignore
+			}
 		}
 
-		message = String.format( message, record.getParameters( ) );
-		Date date = new Date( record.getMillis( ) );
-		return formatter.format( date ).toString( ) + " " + record.getLoggerName( ) + " [" + record.getLevel( ) + "] " + message + "\n";
+		return sb.toString();
 	}
 
 }

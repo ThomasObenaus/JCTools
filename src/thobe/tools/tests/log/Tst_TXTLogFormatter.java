@@ -48,6 +48,19 @@ public class Tst_TXTLogFormatter
 		formattedMessage = formattedMessage.replaceAll( "[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}","").trim( );		
 	
 		assertEquals( "[SEVERE] Dies ist ein Fehler (Schwerer Fehler) der ausgegeben wird.", formattedMessage );
+		
+		
+//		lRecord = new LogRecord( Level.SEVERE,"Dies ist ein Fehler ({0}) der ausgegeben wird." );
+//		lRecord.setParameters( new String[]{"Schwerer Fehler"} );
+//		lRecord.setThrown(new IllegalArgumentException("EXCEPTION"));
+//		
+//		
+//		formattedMessage = f.format( lRecord );
+//		
+//		// cur off the time
+//		formattedMessage = formattedMessage.replaceAll( "[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}","").trim( );		
+//	
+//		assertEquals( "[SEVERE] Dies ist ein Fehler (Schwerer Fehler) der ausgegeben wird.", formattedMessage );
 	}
 }
 
