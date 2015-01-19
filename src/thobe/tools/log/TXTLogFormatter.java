@@ -38,6 +38,10 @@ public class TXTLogFormatter extends SimpleFormatter {
 
 		String dateStr = formatter.format(new Date(record.getMillis()));
 		sb.append(dateStr + " ");
+		if (record.getLoggerName() != null) 
+		{
+			sb.append(record.getLoggerName() + " ");
+		}
 		sb.append("[" + record.getLevel().getLocalizedName() + "] ");
 		sb.append(formatMessage(record)).append(LINE_SEPARATOR);
 
