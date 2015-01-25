@@ -36,6 +36,69 @@ public class Logging
 	 * List of loggers that where registered via ini-file resulting in calling {@link Logging#init(String)}
 	 */
 	private static Set<Logger>	registeredLoggers	= new HashSet<>( );
+	
+	/**
+	 * Use this method to initialize logging per ini-file. Within the given ini-file you can specify log-target (a file or stdout) for each
+	 * log-channel separately.</br>
+	 * <b>Format of inifile:</b></br>
+	 * NameOfLogChannel = Group[;Group;Group;...]</br>
+	 * group := LogTarget,LogLevel</br>
+	 * LogTarget := stdout|Filename</br>
+	 * LogLevel := OFF|SEVERE|WARNING|INFO|FINE|FINER|FINEST|ALL</br>
+	 * </br>
+	 * <b>Example: file logging.ini</b></br>
+	 * log.channel.one = stdout,INFO</br>
+	 * log.channel.two = log/test.log,ALL;stdout,SEVERE</br>
+	 * log.channel.three = log/test.log,SEVERE;stdout,INFO</br>
+	 * </br>
+	 * <b>Example: Usage in code</b></br> <code>
+	 * Logging.init("logging.ini");</br>
+	 * Logger.getLogger( "log.channel.one" ).info("Hello world (should be visible only on stdout");</br>
+	 * Logger.getLogger( "log.channel.two" ).info("Hello world (should be visible only on log/test.log");</br>
+	 * Logger.getLogger( "log.channel.two" ).severe("Hello world (should be visible on stdout and in log/test.log");</br>
+	 * </code>
+	 * 
+	 * File size is not limited, no file-rotation will be used (filecount == 1), appendMode is set to false. See {@link Logging#init(String, int, int, boolean)}.
+	 * 
+	 * @param filename 		- name of the inifile 
+	 * @throws LoggingException
+	 */
+	public static void init( String filename ) throws LoggingException
+	{
+		init(filename,0,1,false);
+	}
+	
+	/**
+	 * Use this method to initialize logging per ini-file. Within the given ini-file you can specify log-target (a file or stdout) for each
+	 * log-channel separately.</br>
+	 * <b>Format of inifile:</b></br>
+	 * NameOfLogChannel = Group[;Group;Group;...]</br>
+	 * group := LogTarget,LogLevel</br>
+	 * LogTarget := stdout|Filename</br>
+	 * LogLevel := OFF|SEVERE|WARNING|INFO|FINE|FINER|FINEST|ALL</br>
+	 * </br>
+	 * <b>Example: file logging.ini</b></br>
+	 * log.channel.one = stdout,INFO</br>
+	 * log.channel.two = log/test.log,ALL;stdout,SEVERE</br>
+	 * log.channel.three = log/test.log,SEVERE;stdout,INFO</br>
+	 * </br>
+	 * <b>Example: Usage in code</b></br> <code>
+	 * Logging.init("logging.ini");</br>
+	 * Logger.getLogger( "log.channel.one" ).info("Hello world (should be visible only on stdout");</br>
+	 * Logger.getLogger( "log.channel.two" ).info("Hello world (should be visible only on log/test.log");</br>
+	 * Logger.getLogger( "log.channel.two" ).severe("Hello world (should be visible on stdout and in log/test.log");</br>
+	 * </code>
+	 * 
+	 * No file-rotation will be used (filecount == 1), appendMode is set to false. See {@link Logging#init(String, int, int, boolean)}.
+	 * 
+	 * @param filename 		- name of the inifile
+	 * @param limit 		- the maximum number of bytes to write to any one file (0 means unlimited)	
+	 * @throws LoggingException
+	 */
+	public static void init( String filename, int limit ) throws LoggingException
+	{
+		init(filename,limit,1,false);
+	}
 
 	/**
 	 * Use this method to initialize logging per ini-file. Within the given ini-file you can specify log-target (a file or stdout) for each
@@ -57,10 +120,13 @@ public class Logging
 	 * Logger.getLogger( "log.channel.two" ).info("Hello world (should be visible only on log/test.log");</br>
 	 * Logger.getLogger( "log.channel.two" ).severe("Hello world (should be visible on stdout and in log/test.log");</br>
 	 * </code>
-	 * @param filename - name of the inifile
+	 * @param filename 		- name of the inifile
+	 * @param limit 		- the maximum number of bytes to write to any one file (0 means unlimited)
+	 * @param count 		- the number of files to use (default 1)
+	 * @param append 		- specifies append mode
 	 * @throws LoggingException
 	 */
-	public static void init( String filename ) throws LoggingException
+	public static void init( String filename, int limit, int count , boolean append ) throws LoggingException
 	{
 		Map<String, FileHandler> fileHandlers = new HashMap<>( );
 
@@ -154,7 +220,21 @@ public class Logging
 							FileHandler fHandler = fileHandlers.get( file.getAbsolutePath( ) );
 							if ( fHandler == null )
 							{
-								fHandler = new FileHandler( file.getAbsolutePath( ) );
+								String filePattern = file.getAbsolutePath();
+								if(count>1)
+								{
+									int pos = filePattern.lastIndexOf(".");
+									if(pos!=-1)
+									{
+										filePattern = filePattern.substring(0,pos) + "%g" + filePattern.substring(pos, filePattern.length());
+									}
+									else
+									{
+										filePattern += "%g";
+									}
+								}// if(count>1).
+								
+								fHandler = new FileHandler( filePattern,limit,count,append );								
 								fHandler.setFormatter( new TXTLogFormatter( ) );
 								fileHandlers.put( file.getAbsolutePath( ), fHandler );
 								fHandler.setLevel( level );
