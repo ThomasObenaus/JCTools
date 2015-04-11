@@ -10,7 +10,7 @@
 		<property name="ToolL.eclipse.src.dir"		value="src"/>
 			
 		<!-- Bitte Versionsnummer des anpassen -->
-		<property name="ToolL.Program-Version"  value="1.0.2.0"/>
+		<property name="ToolL.Program-Version"  value="1.0.3.0"/>
 	    
 	    <!-- Diese Eigenschaften sollten unverändert bleiben -->
 	    <property name="ToolL.jar.dir"			value="jar"/>
