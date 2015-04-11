@@ -38,24 +38,34 @@ import java.util.zip.ZipFile;
 public abstract class PluginClassLoader extends ClassLoader
 {
 	/**
-	 * Map of class-name to the corresponding {@link InputStream}.
+	 * Map of class-name to resource-name
 	 */
-	private Map<String, InputStream>	entries;
+	private Map<String, String>		classNameToResourceNameMap;
 
 	/**
 	 * Map of resource-name to the corresponding {@link URL} within the given jar-file
 	 */
-	private Map<String, URL>			resources;
+	private Map<String, URL>		resources;
 
 	/**
 	 * The internal {@link Logger}.
 	 */
-	private Logger						log;
+	private Logger					log;
 
 	/**
 	 * True if debugging is enabled, false otherwise.
 	 */
-	private boolean						debugLoggingEnabled;
+	private boolean					debugLoggingEnabled;
+
+	/**
+	 * The zipfile in case we load the classes from a zip/jar.
+	 */
+	private ZipFile					zip;
+
+	/**
+	 * Map of all classes that where already defined.
+	 */
+	private Map<String, Class<?>>	alreadyDefined;
 
 	/**
 	 * Ctor - Loads classes and resources from a given jar/zip-File
@@ -87,10 +97,12 @@ public abstract class PluginClassLoader extends ClassLoader
 	public PluginClassLoader( ClassLoader parent, ZipFile jarFile, Logger log ) throws ZipException, IOException, URISyntaxException
 	{
 		super( parent );
+		this.zip = jarFile;
 		this.log = log;
 		this.debugLoggingEnabled = ( ( this.log != null ) && ( this.log.isLoggable( Level.FINEST ) ) );
-		this.entries = new HashMap<String, InputStream>( );
+		this.classNameToResourceNameMap = new HashMap<String, String>( );
 		this.resources = new HashMap<String, URL>( );
+		this.alreadyDefined = new HashMap<>( );
 
 		// create the url-prefix for this jar-file 
 		String urlPrefix = "jar:file:" + jarFile.getName( ) + "!/";
@@ -116,10 +128,10 @@ public abstract class PluginClassLoader extends ClassLoader
 
 				// convert the given resource-name into a class-name if possible 
 				// non class-entries will be ignored
-				String name = resourceNameToClassName( entry.getName( ) );
+				String name = resourceNameToClassName( nameOfEntry );
 				if ( name != null )
 				{
-					this.entries.put( name, jarFile.getInputStream( entry ) );
+					this.classNameToResourceNameMap.put( name, nameOfEntry );
 					// logging
 					if ( this.debugLoggingEnabled )
 					{
@@ -160,8 +172,10 @@ public abstract class PluginClassLoader extends ClassLoader
 	{
 		super( parent );
 		this.debugLoggingEnabled = ( ( this.log != null ) && ( this.log.isLoggable( Level.FINEST ) ) );
-		this.entries = new HashMap<String, InputStream>( );
+		this.classNameToResourceNameMap = new HashMap<String, String>( );
 		this.resources = new HashMap<String, URL>( );
+		this.alreadyDefined = new HashMap<>( );
+		this.zip = null;
 
 		for ( File directory : directories )
 		{
@@ -212,7 +226,7 @@ public abstract class PluginClassLoader extends ClassLoader
 					String name = resourceNameToClassName( nameOfEntry );
 					if ( name != null )
 					{
-						this.entries.put( name, new FileInputStream( entry ) );
+						this.classNameToResourceNameMap.put( name, directory.getAbsolutePath( ) + File.separator + nameOfEntry );
 						// logging
 						if ( this.debugLoggingEnabled )
 						{
@@ -249,39 +263,61 @@ public abstract class PluginClassLoader extends ClassLoader
 
 	public Class<?> loadClass( String name ) throws ClassNotFoundException
 	{
-		InputStream input = this.entries.get( name );
+		String nameOfResource = this.classNameToResourceNameMap.get( name );
 
 		// use the parent classloader for unknown classes and for those which should not be loaded using this PluginClassLoder
-		if ( ( input == null ) || useParentClassLoader( name ) )
+		if ( ( nameOfResource == null ) || useParentClassLoader( name ) )
 			return super.loadClass( name );
 
-		try
+		Class<?> result = this.alreadyDefined.get( name );
+
+		if ( result == null )
 		{
-			// read the class-file
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream( );
-			int data = input.read( );
-
-			while ( data != -1 )
+			try
 			{
-				buffer.write( data );
-				data = input.read( );
+				InputStream input = this.getInputStreamForEntry( nameOfResource );
+
+				// read the class-file
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream( );
+				int data = input.read( );
+
+				while ( data != -1 )
+				{
+					buffer.write( data );
+					data = input.read( );
+				}
+
+				input.close( );
+
+				// now define the class, will never be loaded again
+				byte[] classData = buffer.toByteArray( );
+				result = defineClass( name, classData, 0, classData.length );
+				this.alreadyDefined.put( name, result );
 			}
-
-			input.close( );
-
-			// now define the class, will never be loaded again
-			byte[] classData = buffer.toByteArray( );
-			return defineClass( name, classData, 0, classData.length );
+			catch ( IOException e )
+			{
+				if ( debugLoggingEnabled )
+				{
+					this.log.throwing( PluginClassLoader.class.getName( ), "loadClass", e );
+				}
+			}
 		}
-		catch ( IOException e )
+
+		return result;
+	}
+
+	private InputStream getInputStreamForEntry( String name ) throws IOException
+	{
+		InputStream is = null;
+		if ( this.zip != null )
 		{
-			if ( debugLoggingEnabled )
-			{
-				this.log.throwing( PluginClassLoader.class.getName( ), "loadClass", e );
-			}
+			is = this.zip.getInputStream( this.zip.getEntry( name ) );
 		}
-
-		return null;
+		else
+		{
+			is = new FileInputStream( name );
+		}
+		return is;
 	}
 
 	/**
