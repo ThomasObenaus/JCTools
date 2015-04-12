@@ -10,7 +10,7 @@
 		<property name="ToolL.eclipse.src.dir"		value="src"/>
 			
 		<!-- Bitte Versionsnummer des anpassen -->
-		<property name="ToolL.Program-Version"  value="1.0.3.1"/>
+		<property name="ToolL.Program-Version"  value="1.0.3.2"/>
 	    
 	    <!-- Diese Eigenschaften sollten unverändert bleiben -->
 	    <property name="ToolL.jar.dir"			value="jar"/>
@@ -34,8 +34,8 @@
 		<!-- Dateien aus Eclipse src Verzeichnis kopieren -->
         <copy toDir="${ToolL.sourceTemp}/">
     		<fileset dir="${ToolL.eclipse.src.dir}">
-    			<include name="**/*.java"/>
-        		<include name="**/*.properties"/>
+    			<include name="thobe/tools/**/*.java"/>
+        		<include name="thobe/tools/**/*.properties"/>
     		</fileset>
     	</copy>
   		<zip destfile="${ToolL.sourceZip}" basedir="${ToolL.sourceTemp}" />
@@ -54,10 +54,10 @@
         <!-- Dateien aus Eclipse build Verzeichnis kopieren -->
         <copy toDir="${ToolL.jar.dir}/">
     		<fileset dir="${ToolL.eclipse.build.dir}">
-    			<include name="**/*.class"/>
-        		<include name="**/*.properties"/>
-    			<include name="**/*.gif"/>
-    			<include name="**/*.png"/>        		
+    			<include name="thobe/tools/**/*.class"/>
+        		<include name="thobe/tools/**/*.properties"/>
+    			<include name="thobe/tools/**/*.gif"/>
+    			<include name="thobe/tools/**/*.png"/>        		
         		<exclude name="**/*.jar"/>    			
     		</fileset>
     	</copy>

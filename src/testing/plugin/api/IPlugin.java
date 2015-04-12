@@ -3,7 +3,7 @@
  *
  *	Author: 	Thomas Obenaus
  *	EMail:		obenaus.thomas@gmail.com
- *  Project:    JCWidgets
+ *  Project:    JavaComponents/Tools
  */
 
 package testing.plugin.api;

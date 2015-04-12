@@ -5,7 +5,7 @@
  *
  *	Author: 	Thomas Obenaus
  *	EMail:		obenaus.thomas@gmail.com
- *  Project:    LogFileViewer
+ *  Project:    JavaComponents/Tools
  */
 
 package testing.plugin;
