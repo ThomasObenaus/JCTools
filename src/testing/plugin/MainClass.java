@@ -31,7 +31,6 @@ public class MainClass
 {
 	public static void main( String[] args ) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, URISyntaxException
 	{
-		
 
 		List<File> dirs = new ArrayList<File>( );
 		dirs.add( new File( "src/" ) );
@@ -41,7 +40,6 @@ public class MainClass
 
 		System.out.println( "AppClassLoader: " + appClassLoader );
 		System.out.println( "SpecialClassLoader: " + specClassLoader );
-
 
 		IPlugin objFromAppClassLoader = new Plugin( );
 		IPlugin objFromSpecialClassLoader = ( IPlugin ) specClassLoader.loadClass( "testing.plugin.impl.Plugin" ).newInstance( );

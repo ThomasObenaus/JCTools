@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,7 +107,8 @@ public abstract class PluginClassLoader extends ClassLoader
 		this.alreadyDefined = new HashMap<>( );
 
 		// create the url-prefix for this jar-file 
-		String urlPrefix = "jar:file:" + jarFile.getName( ) + "!/";
+		Path pathToJarFile = Paths.get( jarFile.getName( ) );
+		String urlPrefix = "jar:" + pathToJarFile.toUri( ) + "!/";
 
 		// now iterate over all entries and obtain resources and input-streams for loading classes
 		Enumeration<? extends ZipEntry> zipEntries = jarFile.entries( );
@@ -115,10 +118,10 @@ public abstract class PluginClassLoader extends ClassLoader
 			if ( entry != null )
 			{
 				String nameOfEntry = entry.getName( );
-				URL uriOfResource = new URI( urlPrefix + entry.getName( ) ).toURL( );
+				URI uriOfResource = new URI( urlPrefix + entry.getName( ) );
 
 				// store the resource
-				this.resources.put( nameOfEntry, uriOfResource );
+				this.resources.put( nameOfEntry, uriOfResource.toURL( ) );
 
 				// logging
 				if ( this.debugLoggingEnabled )
@@ -190,11 +193,18 @@ public abstract class PluginClassLoader extends ClassLoader
 
 			// create the url-prefix for this directory		
 			String urlPrefixToSubtract = directory.getAbsolutePath( );
+			String firstPartOfPath = urlPrefixToSubtract;
+
 			if ( !urlPrefixToSubtract.endsWith( File.separator ) )
 			{
 				urlPrefixToSubtract += File.separator;
 			}
-			String urlPrefix = "file:" + urlPrefixToSubtract;
+
+			// try to fix/ escape the \ in  win path 
+			if ( urlPrefixToSubtract.contains( "\\" ) )
+			{
+				urlPrefixToSubtract = urlPrefixToSubtract.replaceAll( "\\\\", "\\\\\\\\" );
+			}
 
 			Set<File> files = new HashSet<File>( );
 			listFiles( directory, files, true );
@@ -210,10 +220,13 @@ public abstract class PluginClassLoader extends ClassLoader
 					{
 						resourceName += File.separator;
 					}
-					URL uriOfResource = new URI( urlPrefix + resourceName ).toURL( );
+
+					String completeResourcePath = firstPartOfPath + resourceName;
+					Path resourcePath = Paths.get( completeResourcePath ).normalize( );
+					URI uriOfResource = resourcePath.toUri( );
 
 					// store the resource
-					this.resources.put( resourceName, uriOfResource );
+					this.resources.put( resourceName, uriOfResource.toURL( ) );
 
 					// logging
 					if ( this.debugLoggingEnabled )
