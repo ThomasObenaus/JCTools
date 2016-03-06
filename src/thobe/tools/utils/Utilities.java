@@ -54,7 +54,7 @@ public class Utilities
 	/**
 	 * Checks if the user has the needed permissions to be able to create/
 	 * modify files in the given <i>directory</i> by trying to create a
-	 * temp-file.
+	 * tempoary-file.
 	 * @param directory - the directory that should be examined
 	 * @return - false if the given File (<i>directory</i>) is null, is no
 	 *         directory or if the needed permissions are missing, true
