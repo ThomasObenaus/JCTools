@@ -5,7 +5,7 @@
  *
  *	Author: 	Thomas Obenaus
  *	EMail:		obenaus.thomas@gmail.com
- *  Project:    JavaComponents/Tools
+ *      Project:    JavaComponents/Tools
  */
 package thobe.tools.utils;
 
